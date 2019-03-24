@@ -106,6 +106,7 @@ namespace QuizNumbersAndSum
 
             try
             {
+                //todo: find assembly by interface, not by name
                 Assembly assembly = null;
 
                 string assemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
