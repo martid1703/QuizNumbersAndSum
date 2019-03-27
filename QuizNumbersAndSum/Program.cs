@@ -12,7 +12,7 @@ namespace QuizNumbersAndSum
         {
             int from = 1;
             int to = 200;
-            int size = 100;
+            int size = 100000;
 
             // setup initial array parameters
             if (args.Length == 3)
@@ -47,7 +47,7 @@ namespace QuizNumbersAndSum
             {
                 // call algorithms with different types of incoming arrays: natural series or random series
                 logWriter.Write($"Start generating numbers: {DateTime.Now.ToLongTimeString()}");
-                StartConditions.SeriesKind seriesKind = (StartConditions.SeriesKind)rnd.Next(1, 2);
+                StartConditions.SeriesKind seriesKind = (StartConditions.SeriesKind)rnd.Next(2, 3);
 
                 // testing algorithms
                 logWriter.Write($"Start testing algorithms: {DateTime.Now.ToLongTimeString()}");
@@ -71,6 +71,9 @@ namespace QuizNumbersAndSum
                     break;
                 case StartConditions.SeriesKind.randomSeries:
                     numbers = StartConditions.GenerateRandomSeries(from, to, size);
+                    break;
+                case StartConditions.SeriesKind.shuffledNaturalSeries:
+                    numbers = StartConditions.GenerateShuffledNaturalSeries(from, to, size);
                     break;
                 default:
                     break;
@@ -100,9 +103,9 @@ namespace QuizNumbersAndSum
 
         private static void RunAlgorithm(int[] numbers, int sum, string algName, string mainMethodName, List<TimeSpan> algTimeSpan, List<string> results, LogWriter logWriter)
         {
-            string numbersString = PrintArray(numbers);
-            string resultStr=$"\nArray of numbers: {numbersString}";
-            resultStr += $"\nSum to match = {sum}";
+            //string numbersString = PrintArray(numbers);
+            string resultStr="";//=$"\nArray of numbers: {numbersString}";
+            //resultStr += $"\nSum to match = {sum}";
 
             try
             {

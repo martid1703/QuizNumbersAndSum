@@ -11,8 +11,9 @@ namespace QuizNumbersAndSum
     {
         public enum SeriesKind
         {
-            naturalSeries=0,
-            randomSeries=1
+            naturalSeries = 0,
+            randomSeries = 1,
+            shuffledNaturalSeries=2
         }
 
         static Random rnd = new Random();
@@ -23,7 +24,7 @@ namespace QuizNumbersAndSum
             int[] numbers = new int[size];
             for (int i = 0; i < size; i++)
             {
-                numbers[i] = rnd.Next(from, to+1);
+                numbers[i] = rnd.Next(from, to + 1);
             }
 
             return numbers;
@@ -35,7 +36,27 @@ namespace QuizNumbersAndSum
             int[] numbers = new int[size];
             for (int i = 0; i < size; i++)
             {
-                numbers[i] = i+1;
+                numbers[i] = i + 1;
+            }
+
+            return numbers;
+        }
+
+        // Generate array of natural series like 1,2,3...10 and then shuffle all numbers
+        public static int[] GenerateShuffledNaturalSeries(int from, int to, int size)
+        {
+            int[] numbers = new int[size];
+            for (int i = 0; i < size; i++)
+            {
+                numbers[i] = i + 1;
+            }
+
+            for (int i = 0; i < size; i++)
+            {
+                int temp = numbers[i];
+                int index = rnd.Next(0, size);
+                numbers[i] = numbers[index];
+                numbers[index] = temp;
             }
 
             return numbers;
@@ -45,7 +66,7 @@ namespace QuizNumbersAndSum
         public static int GenerateSum(int from, int to, int size)
         {
             int sum = 0;
-            sum = rnd.Next(from, to * 2);
+            sum = rnd.Next(from, to +1);
             return sum;
         }
     }
