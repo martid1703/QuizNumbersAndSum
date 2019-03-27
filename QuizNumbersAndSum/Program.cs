@@ -12,7 +12,7 @@ namespace QuizNumbersAndSum
         {
             int from = 1;
             int to = 200;
-            int size = 10000;
+            int size = 100;
 
             // setup initial array parameters
             if (args.Length == 3)
@@ -80,11 +80,11 @@ namespace QuizNumbersAndSum
 
             // assembly and class name are supposed to be the same
             const string alg1Name = "DmitryAlgorithm";
-            const string alg2Name = "to be defined";
+            const string alg2Name = "AleksAlgorithm";
             const string mainMethodName = "GetIndexes";
 
             RunAlgorithm(numbers, sum, alg1Name, mainMethodName, timeSpanAlg1, resultsAlg1, logWriter);
-            //RunAlgorithm(numbers, sum, alg2Name, mainMethodName, timeSpanAlg2, resultsAlg2, logWriter);
+            RunAlgorithm(numbers, sum, alg2Name, mainMethodName, timeSpanAlg2, resultsAlg2, logWriter);
 
             string report = "";
 
@@ -92,7 +92,7 @@ namespace QuizNumbersAndSum
             for (int i = 0; i < timeSpanAlg1.Count; i++)
             {
                 report+= $"\n{timeSpanAlg1[i].TotalMilliseconds} ms, Result: {resultsAlg1[i]}";
-                //report += $"\n{timeSpanAlg2[i].TotalMilliseconds} ms, Result: {resultsAlg2[i]}";
+                report += $"\n{timeSpanAlg2[i].TotalMilliseconds} ms, Result: {resultsAlg2[i]}";
             }
                 logWriter.Write(report);
 
