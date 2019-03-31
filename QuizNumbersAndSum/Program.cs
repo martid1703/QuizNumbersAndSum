@@ -3,6 +3,7 @@ using System.Reflection;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace QuizNumbersAndSum
 {
@@ -12,7 +13,7 @@ namespace QuizNumbersAndSum
         {
             int from = 1;
             int to = 200;
-            int size = 100000;
+            int size = 1000;
 
             // setup initial array parameters
             if (args.Length == 3)
@@ -34,6 +35,37 @@ namespace QuizNumbersAndSum
 
             }
 
+            CancellationTokenSource cts = new CancellationTokenSource();
+            Thread tesingThread = new Thread(() => StartTesting(from, to, size, cts.Token));
+            tesingThread.IsBackground = true;
+            tesingThread.Start();
+
+            Console.WriteLine("If you want to terminate program immediately type 'q' and hit Enter:");
+            // await for the testing thread, also allows to finish program gracefully if tired of waiting
+
+
+            // update progress bar here or smth similar
+
+            string reply = Console.ReadLine();
+            if (reply.Length > 0)
+            {
+                if (String.Compare(reply, "q") == 0)
+                {
+                    Console.WriteLine("Program has been terminated by the user.");
+                    cts.Cancel();
+                }
+            }
+
+            Console.WriteLine("Program has ended. Good bye.");
+        }
+
+        private static void StartTesting(int from, int to, int size, CancellationToken ct)
+        {
+            ct.Register(() =>
+            {
+                return;
+            });
+
             string logPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string logName = "log.txt";
 
@@ -42,138 +74,36 @@ namespace QuizNumbersAndSum
 
             LogWriter logWriter = new LogWriter(logPath, logName);
 
-            Random rnd = new Random();
-            for (int i = 0; i < 3; i++)
-            {
-                // call algorithms with different types of incoming arrays: natural series or random series
-                logWriter.Write($"Start generating numbers: {DateTime.Now.ToLongTimeString()}");
-                StartConditions.SeriesKind seriesKind = (StartConditions.SeriesKind)rnd.Next(2, 3);
-
-                // testing algorithms
-                logWriter.Write($"Start testing algorithms: {DateTime.Now.ToLongTimeString()}");
-                TestAlgorithms(from, to, size,seriesKind, logWriter);
-            }
-
-        }
-
-        private static void TestAlgorithms(int from, int to, int size, StartConditions.SeriesKind seriesKind, LogWriter logWriter)
-        {
-            int[] numbers=null;
-            List<TimeSpan> timeSpanAlg1=new List<TimeSpan>();
-            List<TimeSpan> timeSpanAlg2=new List<TimeSpan>();
+            int totalLoops = 3;
+            int currentLoops = 0;
+            List<TimeSpan> timeSpanAlg1 = new List<TimeSpan>();
+            List<TimeSpan> timeSpanAlg2 = new List<TimeSpan>();
             List<string> resultsAlg1 = new List<string>();
             List<string> resultsAlg2 = new List<string>();
 
-            switch (seriesKind)
+            Random rnd = new Random();
+            for (int i = 0; i < totalLoops; i++)
             {
-                case StartConditions.SeriesKind.naturalSeries:
-                    numbers = StartConditions.GenerateNaturalSeries(from, to, size);
-                    break;
-                case StartConditions.SeriesKind.randomSeries:
-                    numbers = StartConditions.GenerateRandomSeries(from, to, size);
-                    break;
-                case StartConditions.SeriesKind.shuffledNaturalSeries:
-                    numbers = StartConditions.GenerateShuffledNaturalSeries(from, to, size);
-                    break;
-                default:
-                    break;
-            }
-            // Create array and sum
-            int sum = StartConditions.GenerateSum(from, to, size);
-
-            // assembly and class name are supposed to be the same
-            const string alg1Name = "DmitryAlgorithm";
-            const string alg2Name = "AleksAlgorithm";
-            const string mainMethodName = "GetIndexes";
-
-            RunAlgorithm(numbers, sum, alg1Name, mainMethodName, timeSpanAlg1, resultsAlg1, logWriter);
-            RunAlgorithm(numbers, sum, alg2Name, mainMethodName, timeSpanAlg2, resultsAlg2, logWriter);
-
-            string report = "";
-
-            report+=$"Timespans for algoritm {alg1Name} & {alg2Name}";
-            for (int i = 0; i < timeSpanAlg1.Count; i++)
-            {
-                report+= $"\n{timeSpanAlg1[i].TotalMilliseconds} ms, Result: {resultsAlg1[i]}";
-                report += $"\n{timeSpanAlg2[i].TotalMilliseconds} ms, Result: {resultsAlg2[i]}";
-            }
-                logWriter.Write(report);
-
-        }
-
-        private static void RunAlgorithm(int[] numbers, int sum, string algName, string mainMethodName, List<TimeSpan> algTimeSpan, List<string> results, LogWriter logWriter)
-        {
-            //string numbersString = PrintArray(numbers);
-            string resultStr="";//=$"\nArray of numbers: {numbersString}";
-            //resultStr += $"\nSum to match = {sum}";
-
-            try
-            {
-                //todo: find assembly by interface, not by name
-                Assembly assembly = null;
-
-                string assemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                string assemblyLoadFrom = Path.Combine(assemblyLocation, algName + ".dll");
-                assembly = Assembly.LoadFrom(assemblyLoadFrom);
-
-                Type classType = assembly.GetType(algName + "." + algName);
-                object alg = Activator.CreateInstance(classType);
-                MethodInfo mi = classType.GetMethod(mainMethodName);
-
-                DateTime start = DateTime.Now;
-                // start algorithm
-                object answerObj = mi.Invoke(alg, new object[] { numbers, sum });
-                DateTime finish = DateTime.Now;
-                TimeSpan algRunTime = finish - start;
-                algTimeSpan.Add(algRunTime);
-
-                // check if answer provided by alogrithm is correct
-                resultStr = CheckAnswer(numbers, sum, algName, resultStr, answerObj, algRunTime, results);
-
-                logWriter.Write(resultStr);
-                Console.Write(resultStr);
-            }
-            catch (Exception e)
-            {
-                string errorMsg = $"Cannot run algoritm! Algorithm \"{algName}\", \nException message: {e.Message}";
-                logWriter.Write(errorMsg);
-                Console.WriteLine(errorMsg);
-            }
-        }
-
-        private static string CheckAnswer(int[] numbers, int sum, string algName, string resultStr, object answerObj, TimeSpan timeSpan, List<string> results)
-        {
-            try
-            {
-                Tuple<int, int> answer = answerObj as Tuple<int,int>;
-                if (answer==null)
-                {
-                    resultStr += $"\nAlgorithm \"{algName}\" run time is: {timeSpan.TotalMilliseconds} ms, answer is: No answer found!";
-                    results.Add("No answer found");
-                }
-                else
-                {
-                    if (numbers[answer.Item1] + numbers[answer.Item2] != sum)
-                    {
-                        resultStr += $"\nAlgorithm \"{algName}\" run time is: {timeSpan.TotalMilliseconds} ms, answer is: Incorrect! Provided indexes are: {answer.Item1}, {answer.Item2} and values: {numbers[answer.Item1]}+{numbers[answer.Item2]}!={sum}";
-                        results.Add("Incorrect");
-
-                    }
-                    else
-                    {
-                        resultStr += $"\nAlgorithm \"{algName}\" run time is: {timeSpan.TotalMilliseconds} ms, answer is: Correct! Provided indexes are: {answer.Item1}, {answer.Item2} and values: {numbers[answer.Item1]}+{numbers[answer.Item2]}=={sum}";
-                        results.Add("Correct");
-
-                    }
-                }
+                // call algorithms with different types of incoming arrays: natural series or random series
+                logWriter.Write($"Start generating numbers: {DateTime.Now.ToLongTimeString()}");
                 
-            }
-            catch (Exception ex)
-            {
-                throw ex;
+                //StartConditions.SeriesKind seriesKind = 
+                    //(StartConditions.SeriesKind)rnd.Next(0, Enum.GetNames(typeof(StartConditions.SeriesKind)).Length);
+                StartConditions.SeriesKind seriesKind = (StartConditions.SeriesKind)i;
+
+                Console.WriteLine($"\n===========================================");
+                Console.WriteLine($"\nRun number {i+1}. Series kind: {seriesKind}\n");
+
+                currentLoops++;
+
+                // testing algorithms
+                logWriter.Write($"Start testing algorithms: {DateTime.Now.ToLongTimeString()}");
+                    Testing.TestAlgorithms(from, to, size, seriesKind, logWriter, currentLoops, timeSpanAlg1, timeSpanAlg2, resultsAlg1, resultsAlg2, ct);
             }
 
-            return resultStr;
+            Console.WriteLine($"\n================================");
+            Console.WriteLine($"\nAlgorithm testing has completed. Press any key to exit");
+            Console.WriteLine($"================================");
         }
 
         private static string PrintArray(int[] numbers)

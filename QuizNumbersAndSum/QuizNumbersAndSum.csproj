@@ -43,10 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CheckAnswer.cs" />
     <Compile Include="LogWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RunAlgorithm.cs" />
     <Compile Include="StartConditions.cs" />
+    <Compile Include="Testing.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

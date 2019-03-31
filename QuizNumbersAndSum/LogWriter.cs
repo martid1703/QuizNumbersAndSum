@@ -8,22 +8,29 @@ namespace QuizNumbersAndSum
     {
         private string logPath;
         private string logName;
+        private object locker;// for multithreading
         public LogWriter(string logPath, string logName)
         {
             this.logPath = logPath;
             this.logName = logName;
+            locker = new object();
         }
+
         public void Write(string logMessage)
         {
             try
             {
-                using (StreamWriter w = File.AppendText(logPath + "\\" + logName))
+                lock (locker)
                 {
-                    Log(logMessage, w);
+                    using (StreamWriter w = File.AppendText(logPath + "\\" + logName))
+                    {
+                        Log(logMessage, w);
+                    }
                 }
             }
             catch (Exception ex)
             {
+                throw ex;
             }
         }
 
@@ -43,7 +50,17 @@ namespace QuizNumbersAndSum
 
         public void ClearLog()
         {
-            File.WriteAllText(logPath + "\\" + logName, string.Empty);
+            try
+            {
+                lock (locker)
+                {
+                    File.WriteAllText(logPath + "\\" + logName, string.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }
