@@ -42,7 +42,7 @@ namespace QuizNumbersAndSum
             }
             catch (Exception e)
             {
-                string errorMsg = $"Cannot run algoritm! Algorithm \"{algName}\", \nException message: {e.InnerException.Message}";
+                string errorMsg = $"Cannot run algoritm \"{algName}\", \nException message: {e.InnerException.Message}";
                 //Console.WriteLine(errorMsg);
                 Exception algRunException = new Exception(errorMsg, e.InnerException);
                 throw algRunException;

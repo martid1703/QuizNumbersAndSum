@@ -67,11 +67,6 @@ namespace QuizNumbersAndSum
                     Handler));
             thread2.IsBackground = true;
 
-            void Handler(Exception ex)
-            {
-                Console.WriteLine($"Exception happened at TestAlgorithm: {ex.Message}");
-            }
-
             // In case of exception thread is closed, but test method continues, just prints the message.
             thread1.Start();
             thread2.Start();
